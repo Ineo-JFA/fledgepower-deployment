@@ -5,6 +5,7 @@ on:
   push:
     tags:
       - v* # publish only on version tags
+  workflow_dispatch:
 
 env:
   IMAGE_REGISTRY: ghcr.io
@@ -12,10 +13,9 @@ env:
   REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
   FLEDGE_IMAGE_NAME: 'fledgepower/fledge'
   FLEDGE_GUI_IMAGE_NAME: 'fledgepower/fledge-gui'
-  #IMAGE_TAG: '1.0.0-amd64'
-  #IMAGE_TAG: 'latest'
   IMAGE_TAG: ${{ github.ref_name }}
   TASE2_REPO_ACCESS_TOKEN: ${{ secrets.TASE2_REPO_ACCESS_TOKEN }}
+  LATEST_TAG: "${{ github.event_name == 'workflow_dispatch' && 'latest-dev' || 'latest' }}"
 
 jobs:
   build-and-push-image:
@@ -91,8 +91,8 @@ jobs:
       # Tag image with latest image
       - name: Tag image
         run: |
-           sudo -E docker tag ${{ env.IMAGE_REGISTRY }}/${{ github.repository_owner }}/${{ env.FLEDGE_IMAGE_NAME }}:${{ env.IMAGE_TAG }} ${{ env.IMAGE_REGISTRY }}/${{ github.repository_owner }}/${{ env.FLEDGE_IMAGE_NAME }}:latest
-           sudo -E docker tag ${{ env.IMAGE_REGISTRY }}/${{ github.repository_owner }}/${{ env.FLEDGE_GUI_IMAGE_NAME }}:${{ env.IMAGE_TAG }} ${{ env.IMAGE_REGISTRY }}/${{ github.repository_owner }}/${{ env.FLEDGE_GUI_IMAGE_NAME }}:latest
+           sudo -E docker tag ${{ env.IMAGE_REGISTRY }}/${{ github.repository_owner }}/${{ env.FLEDGE_IMAGE_NAME }}:${{ env.IMAGE_TAG }} ${{ env.IMAGE_REGISTRY }}/${{ github.repository_owner }}/${{ env.FLEDGE_IMAGE_NAME }}:${{ env.LATEST_TAG }}
+           sudo -E docker tag ${{ env.IMAGE_REGISTRY }}/${{ github.repository_owner }}/${{ env.FLEDGE_GUI_IMAGE_NAME }}:${{ env.IMAGE_TAG }} ${{ env.IMAGE_REGISTRY }}/${{ github.repository_owner }}/${{ env.FLEDGE_GUI_IMAGE_NAME }}:${{ env.LATEST_TAG }}
 
       # Replace security-severity undefined for license-related findings
       - name: Replace security-severity undefined for license-related findings
@@ -111,6 +111,6 @@ jobs:
       - name: Push images
         run: |
           sudo -E docker push ${{ env.IMAGE_REGISTRY }}/${{ github.repository_owner }}/${{ env.FLEDGE_IMAGE_NAME }}:${{ env.IMAGE_TAG }}
-          sudo -E docker push ${{ env.IMAGE_REGISTRY }}/${{ github.repository_owner }}/${{ env.FLEDGE_IMAGE_NAME }}:latest
+          sudo -E docker push ${{ env.IMAGE_REGISTRY }}/${{ github.repository_owner }}/${{ env.FLEDGE_IMAGE_NAME }}:${{ env.LATEST_TAG }}
           sudo -E docker push ${{ env.IMAGE_REGISTRY }}/${{ github.repository_owner }}/${{ env.FLEDGE_GUI_IMAGE_NAME }}:${{ env.IMAGE_TAG }}
-          sudo -E docker push ${{ env.IMAGE_REGISTRY }}/${{ github.repository_owner }}/${{ env.FLEDGE_GUI_IMAGE_NAME }}:latest
+          sudo -E docker push ${{ env.IMAGE_REGISTRY }}/${{ github.repository_owner }}/${{ env.FLEDGE_GUI_IMAGE_NAME }}:${{ env.LATEST_TAG }}
